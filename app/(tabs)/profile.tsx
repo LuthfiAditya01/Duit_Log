@@ -4,19 +4,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function ProfileScreen() {
-  const { signOut } = useAuth();
+  const auth = useAuth();
   const router = useRouter();
+  
+  if (!auth) {
+    return null; // Atau bisa return loading screen
+  }
+  
+  const { signOut } = auth;
   
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -103,9 +109,9 @@ export default function ProfileScreen() {
         <Text style={styles.email}>{user?.email || 'email@example.com'}</Text>
         
         {/* Chip Member (Hiasan) */}
-        <View style={styles.badge}>
+        {/* <View style={styles.badge}>
           <Text style={styles.badgeText}>Member PRO 💎</Text>
-        </View>
+        </View> */}
       </View>
 
       {/* MENU GROUP 1: AKUN */}
@@ -115,13 +121,13 @@ export default function ProfileScreen() {
           <MenuItem 
             icon="person-outline" 
             label="Edit Profil" 
-            onPress={() => Alert.alert('Coming Soon', 'Nanti kita bikin fitur edit ya!')} 
+            onPress={() => router.push('/(profile)/edit')} 
           />
           <View style={styles.divider} />
           <MenuItem 
             icon="lock-closed-outline" 
             label="Ganti Password" 
-            onPress={() => {}} 
+            onPress={() => router.push('/(profile)/change-password')} 
           />
         </View>
       </View>
@@ -156,14 +162,14 @@ export default function ProfileScreen() {
         <View style={styles.menuContainer}>
           <MenuItem 
             icon="help-circle-outline" 
-            label="Pusat Bantuan" 
-            onPress={() => {}} 
+            label="FAQ" 
+            onPress={() => router.push('/(faq)/' as any)} 
           />
           <View style={styles.divider} />
           <MenuItem 
             icon="information-circle-outline" 
             label="Tentang Aplikasi" 
-            onPress={() => {}} 
+            onPress={() => router.push('/(about)/' as any)} 
           />
         </View>
       </View>
