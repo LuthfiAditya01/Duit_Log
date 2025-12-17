@@ -1,98 +1,266 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import ExpenseChart from "@/components/ExpenseChart";
+import TransactionItem from "@/components/TransactionItem";
+import api from "@/services/api";
+import { formatRupiah } from "@/utils/formatCurrency";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  // State Saldo (Simple calculation)
+  const [saldo, setSaldo] = useState(0);
+  const [income, setIncome] = useState(0);
+  const [expense, setExpense] = useState(0);
+
+  // Fungsi Fetch Data
+  const fetchTransactions = async () => {
+    try {
+      const response = await api.get("/transactions");
+      const data = response.data.data; // Structure: { data: [...] }
+      setTransactions(data);
+      calculateSummary(data);
+    } catch (error) {
+      console.error("Gagal ambil data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Hitung duit masuk/keluar lokal aja biar cepet
+  const calculateSummary = (data: any[]) => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    data.forEach((item) => {
+      if (item.type === "income") totalIncome += item.amount;
+      else totalExpense += item.amount;
+    });
+
+    setIncome(totalIncome);
+    setExpense(totalExpense);
+    setSaldo(totalIncome - totalExpense);
+  };
+
+  // Pake useFocusEffect biar auto-refresh pas balik ke screen ini
+  useFocusEffect(
+    useCallback(() => {
+      fetchTransactions();
+    }, [])
+  );
+
+  // Pull to Refresh logic
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTransactions();
+  };
+
+  return (
+    <ScrollView>
+      <View style={styles.container}>
+        {/* HEADER: Saldo Card */}
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Dompet Lo Sekarang 💸</Text>
+          <Text style={styles.saldo}>{formatRupiah(saldo)}</Text>
+
+          <View style={styles.summaryContainer}>
+            <View style={styles.summaryItem}>
+              <View style={[styles.arrowIcon, { backgroundColor: "#dcfce7" }]}>
+                <Ionicons
+                  name="arrow-up"
+                  size={16}
+                  color="#10b981"
+                />
+              </View>
+              <View>
+                <Text style={styles.summaryLabel}>Masuk</Text>
+                <Text style={styles.incomeText}>{formatRupiah(income)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.summaryItem}>
+              <View style={[styles.arrowIcon, { backgroundColor: "#fee2e2" }]}>
+                <Ionicons
+                  name="arrow-down"
+                  size={16}
+                  color="#ef4444"
+                />
+              </View>
+              <View>
+                <Text style={styles.summaryLabel}>Keluar</Text>
+                <Text style={styles.expenseText}>{formatRupiah(expense)}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={{ paddingHorizontal: 20 }}>{!loading && <ExpenseChart transactions={transactions} />}</View>
+        </View>
+
+        {/* LIST TRANSAKSI */}
+        <View style={styles.content}>
+          <Text style={styles.sectionTitle}>Riwayat Transaksi</Text>
+
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#2563eb"
+              style={{ marginTop: 20 }}
+            />
+          ) : (
+            <FlatList
+              data={transactions}
+              keyExtractor={(item: any) => item._id}
+              renderItem={({ item }) => (
+                <TransactionItem
+                  category={item.category}
+                  amount={item.amount}
+                  type={item.type}
+                  date={item.date}
+                  description={item.description}
+                />
+              )}
+              contentContainerStyle={{ paddingBottom: 100 }} // Biar item bawah gak ketutupan FAB
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                />
+              }
+              ListEmptyComponent={
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>Belum ada transaksi nih.</Text>
+                  <Text style={styles.emptySubText}>Yuk catet duit jajan lo!</Text>
+                </View>
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+
+        {/* FAB (Floating Action Button) buat Nambah Transaksi */}
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push("/(transactions)/add")} // Kita akan bikin route ini nanti
+        >
+          <Ionicons
+            name="add"
+            size={30}
+            color="#fff"
+          />
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    backgroundColor: "#fff",
+    padding: 20,
+    paddingTop: 60, // Space buat status bar
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  greeting: {
+    fontSize: 14,
+    color: "#64748b",
+    marginBottom: 5,
+  },
+  saldo: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#1e293b",
+    marginBottom: 20,
+  },
+  summaryContainer: {
+    flexDirection: "row",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 16,
+    padding: 15,
+    justifyContent: "space-around",
+  },
+  summaryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  divider: {
+    width: 1,
+    backgroundColor: "#cbd5e1",
+    height: "80%",
+  },
+  arrowIcon: {
+    padding: 6,
+    borderRadius: 50,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: "#64748b",
+  },
+  incomeText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#10b981",
+  },
+  expenseText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#ef4444",
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1e293b",
+    marginBottom: 15,
+  },
+  emptyState: {
+    alignItems: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#94a3b8",
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: "#cbd5e1",
+  },
+  fab: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    backgroundColor: "#2563eb",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#2563eb",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
