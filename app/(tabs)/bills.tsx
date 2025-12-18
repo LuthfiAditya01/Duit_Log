@@ -97,7 +97,14 @@ export default function BillsScreen() {
     return (
       <View style={styles.cardWrapper}>
         {/* Card Data Utama */}
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push({
+            pathname: '/(bills)/edit' as any,
+            params: { id: item._id }
+          })}
+          activeOpacity={0.7}
+        >
           <View style={styles.iconContainer}>
             <Ionicons
               name="calendar"
@@ -120,7 +127,7 @@ export default function BillsScreen() {
           <View style={styles.rightSide}>
             <Text style={styles.amount}>{formatRupiah(item.amount)}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Card Delete - Terpisah di kanan */}
         <TouchableOpacity 

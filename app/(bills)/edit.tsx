@@ -1,24 +1,25 @@
 import api from "@/services/api";
 import { formatRupiah } from "@/utils/formatCurrency";
-import { syncBillReminders } from "@/utils/syncReminders"; // Kita panggil logic sakti kita
+import { syncBillReminders } from "@/utils/syncReminders";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-export default function AddBillScreen() {
+export default function EditBillScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // State Form
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [frequency, setFrequency] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
-
-  // State Tanggal (Kita bikin manual selector angka biar simpel, gak perlu DatePicker ribet)
   const [dueDay, setDueDay] = useState("");
-  const [dueMonth, setDueMonth] = useState(""); // 1-12 (Nanti kita kurangin 1 pas kirim ke backend)
+  const [dueMonth, setDueMonth] = useState("");
+
   const handleMonthText = (text: string) => {
     switch (text) {
       case "1":
@@ -50,9 +51,43 @@ export default function AddBillScreen() {
     }
   };
 
+  // Fetch data bill pas pertama kali buka
   useEffect(() => {
-    
-  });
+    fetchBillData();
+  }, []);
+
+  const fetchBillData = async () => {
+    try {
+      const billId = params.id as string;
+      if (!billId) {
+        Alert.alert("Error", "ID tagihan tidak ditemukan");
+        router.back();
+        return;
+      }
+
+      const response = await api.get(`/bills/${billId}`);
+      const billData = response.data.data;
+
+      // Pre-fill form dengan data yang ada
+      setName(billData.name || "");
+      setAmount(billData.amount?.toString() || "");
+      setFrequency(billData.frequency || "MONTHLY");
+      setDueDay(billData.dueDay?.toString() || "");
+      
+      // Convert month dari 0-11 ke 1-12
+      if (billData.dueMonth !== null && billData.dueMonth !== undefined) {
+        setDueMonth((billData.dueMonth + 1).toString());
+      } else {
+        setDueMonth("");
+      }
+    } catch (error: any) {
+      console.error("Gagal ambil data bill:", error);
+      Alert.alert("Error", "Gagal memuat data tagihan");
+      router.back();
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const handleSave = async () => {
     // 1. Validasi
@@ -95,7 +130,6 @@ export default function AddBillScreen() {
             onPress: async () => {
               const { status: retryStatus } = await Notifications.requestPermissionsAsync();
               if (retryStatus === "granted") {
-                // Jika permission berhasil, lanjutkan save
                 await proceedSave(dayInt, monthInt);
               }
             },
@@ -106,7 +140,6 @@ export default function AddBillScreen() {
       }
     }
 
-    // Jika permission sudah granted, proceed langsung
     await proceedSave(dayInt, monthInt);
   };
 
@@ -114,7 +147,9 @@ export default function AddBillScreen() {
     setIsLoading(true);
 
     try {
-      // 2. Kirim ke Backend
+      const billId = params.id as string;
+      
+      // 2. Kirim ke Backend (PUT untuk update)
       const payload = {
         name,
         amount: parseInt(amount),
@@ -123,31 +158,36 @@ export default function AddBillScreen() {
         dueMonth: monthInt, // Null kalo monthly
       };
 
-      const response = await api.post("/bills", payload);
+      await api.put(`/bills/${billId}`, payload);
 
       // 3. PENTING: Refresh Alarm di HP User! ⏰
       await syncBillReminders();
 
-      // Tampilkan notifikasi langsung (immediate) dengan banner
-      // Pakai scheduleNotificationAsync dengan trigger null untuk immediate notification
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "[CONTOH] ⏰ Tagihan " + name + " Sudah mau jatuh tempo nihh!!",
-          body: "Siapin uang " + formatRupiah(parseInt(amount)) + " Segini yahh",
-          sound: "default",
-          data: { billId: response.data.data._id },
-        },
-        trigger: null, // null = immediate notification
-      });
-
-      Alert.alert("Contoh Notifikasi", `Nanti kamu akan dapat notif seperti ini:\n\n"⏰ ${name}"\n"Sudah jatuh tempo: Rp${formatRupiah(parseInt(amount))}"`, [{ text: "Paham", onPress: () => router.back() }]);
+      Alert.alert(
+        "Berhasil! 🎉",
+        "Tagihan berhasil diupdate.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back()
+          }
+        ]
+      );
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Gagal nyimpen data.";
+      const msg = error.response?.data?.message || "Gagal update data.";
       Alert.alert("Error", msg);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoadingData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -163,7 +203,7 @@ export default function AddBillScreen() {
             color="#1e293b"
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tambah Pengingat</Text>
+        <Text style={styles.headerTitle}>Edit Pengingat</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -247,7 +287,7 @@ export default function AddBillScreen() {
           style={styles.saveButton}
           onPress={handleSave}
           disabled={isLoading}>
-          {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Pasang Alarm ⏰</Text>}
+          {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Simpan Perubahan</Text>}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -255,6 +295,12 @@ export default function AddBillScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -316,3 +362,4 @@ const styles = StyleSheet.create({
   saveButton: { backgroundColor: "#2563eb", padding: 16, borderRadius: 12, alignItems: "center" },
   saveText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
+

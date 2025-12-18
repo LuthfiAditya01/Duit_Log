@@ -1,10 +1,9 @@
-import { Stack } from "expo-router";
 import { AuthProvider } from "@/context/AuthContext";
-import { View, ActivityIndicator } from "react-native";
 import * as Notifications from "expo-notifications";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar"; // 1. Import StatusBar
 import { useEffect } from "react";
 import { Platform } from "react-native";
-import { StatusBar } from "expo-status-bar"; // 1. Import StatusBar
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"; // 2. Import Safe Area
 
 Notifications.setNotificationHandler({
@@ -19,20 +18,30 @@ Notifications.setNotificationHandler({
 
 export default function RootLayout() {
   useEffect(() => {
-    async function setupAndroidChannel() {
+    async function setupNotifications() {
+      // 1. Request permission dulu
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        await Notifications.requestPermissionsAsync();
+      }
+
+      // 2. Setup Android channel dengan importance MAX untuk banner notification (heads-up)
       if (Platform.OS === "android") {
+        // MAX = banner muncul di atas layar dengan suara dan getar
         await Notifications.setNotificationChannelAsync("default", {
-          name: "default",
-          // IMPORTANCE: MAX ini kuncinya!
-          // Ini yang bikin notif lo "Nongol" (Heads-up) di atas layar, gak cuma bunyi doang.
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250], // Pola getar: diem-getar-diem-getar
+          name: "Default Notifications",
+          description: "Notifikasi default untuk aplikasi",
+          importance: Notifications.AndroidImportance.MAX, // MAX untuk heads-up banner
+          vibrationPattern: [0, 250, 250, 250],
           lightColor: "#FF231F7C",
+          sound: "default",
+          enableVibrate: true,
+          showBadge: false,
         });
       }
     }
 
-    setupAndroidChannel();
+    setupNotifications();
   }, []);
   return (
     // Bungkus semua pake AuthProvider
