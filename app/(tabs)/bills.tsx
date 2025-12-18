@@ -1,3 +1,4 @@
+import { useTheme } from "@/context/ThemeContext";
 import api from "@/services/api";
 import { formatRupiah } from "@/utils/formatCurrency";
 import { syncBillReminders } from "@/utils/syncReminders";
@@ -8,6 +9,7 @@ import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, T
 
 export default function BillsScreen() {
   const router = useRouter();
+  const colors = useTheme();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -98,24 +100,24 @@ export default function BillsScreen() {
       <View style={styles.cardWrapper}>
         {/* Card Data Utama */}
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadowColor }]}
           onPress={() => router.push({
             pathname: '/(bills)/edit' as any,
             params: { id: item._id }
           })}
           activeOpacity={0.7}
         >
-          <View style={styles.iconContainer}>
+          <View style={[styles.iconContainer, { backgroundColor: colors.primaryLight }]}>
             <Ionicons
               name="calendar"
               size={24}
-              color="#2563eb"
+              color={colors.primary}
             />
           </View>
 
           <View style={styles.details}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.freq}>
+            <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
+            <Text style={[styles.freq, { color: colors.textSecondary }]}>
               {item.frequency === "MONTHLY" 
                 ? `Tiap tanggal ${item.dueDay}` 
                 : item.frequency === "YEARLY" 
@@ -125,14 +127,14 @@ export default function BillsScreen() {
           </View>
 
           <View style={styles.rightSide}>
-            <Text style={styles.amount}>{formatRupiah(item.amount)}</Text>
+            <Text style={[styles.amount, { color: colors.text }]}>{formatRupiah(item.amount)}</Text>
           </View>
         </TouchableOpacity>
 
         {/* Card Delete - Terpisah di kanan */}
         <TouchableOpacity 
           onPress={() => handleDelete(item._id, item.name)} 
-          style={styles.cardDelete}
+          style={[styles.cardDelete, { backgroundColor: colors.error }]}
         >
           <Ionicons
             name="trash-outline"
@@ -145,20 +147,20 @@ export default function BillsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerText}>
-            <Text style={styles.title}>Daftar Tagihan 📅</Text>
-            <Text style={styles.subtitle}>Jangan sampe telat bayar ya!</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Daftar Tagihan 📅</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Jangan sampe telat bayar ya!</Text>
           </View>
           <TouchableOpacity
             onPress={() => syncBillReminders()}
-            style={styles.refreshButton}>
+            style={[styles.refreshButton, { backgroundColor: colors.primaryLight }]}>
             <Ionicons
               name="refresh"
               size={20}
-              color="#2563eb"
+              color={colors.primary}
             />
           </TouchableOpacity>
         </View>
@@ -167,7 +169,7 @@ export default function BillsScreen() {
       {loading ? (
         <ActivityIndicator
           size="large"
-          color="#2563eb"
+          color={colors.primary}
           style={{ marginTop: 20 }}
         />
       ) : (
@@ -180,12 +182,13 @@ export default function BillsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Gak ada tagihan.</Text>
-              <Text style={styles.emptySubText}>Hidup tenang tanpa tagihanark? Atau karena belum dicatet aja?</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Gak ada tagihan.</Text>
+              <Text style={[styles.emptySubText, { color: colors.textTertiary }]}>Hidup tenang tanpa tagihanark? Atau karena belum dicatet aja?</Text>
             </View>
           }
         />
@@ -193,7 +196,7 @@ export default function BillsScreen() {
 
       {/* FAB buat Nambah Bill */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadowColor }]}
         onPress={() => router.push("/(bills)/add")}>
         <Ionicons
           name="add"
@@ -206,13 +209,11 @@ export default function BillsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: { flex: 1 },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
   },
   headerContent: {
     flexDirection: "row",
@@ -222,18 +223,15 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
   },
-  title: { fontSize: 24, fontWeight: "bold", color: "#1e293b" },
-  subtitle: { color: "#64748b", marginTop: 5 },
+  title: { fontSize: 24, fontWeight: "bold" },
+  subtitle: { marginTop: 5 },
   refreshButton: {
-    backgroundColor: "#eff6ff",
     width: 44,
     height: 44,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#dbeafe",
-    shadowColor: "#2563eb",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -250,23 +248,19 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 16,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
   },
   cardDelete: {
-    backgroundColor: "#ef4444",
     width: 60,
     height: 60,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -276,29 +270,30 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 12,
-    backgroundColor: "#eff6ff",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
   },
   details: { flex: 1 },
-  name: { fontSize: 16, fontWeight: "600", color: "#1e293b" },
-  freq: { fontSize: 12, color: "#64748b", marginTop: 2 },
+  name: { fontSize: 16, fontWeight: "600" },
+  freq: { fontSize: 12, marginTop: 2 },
   rightSide: { alignItems: "flex-end" },
-  amount: { fontSize: 16, fontWeight: "bold", color: "#1e293b" },
+  amount: { fontSize: 16, fontWeight: "bold" },
   emptyState: { alignItems: "center", marginTop: 50 },
-  emptyText: { fontSize: 16, fontWeight: "bold", color: "#94a3b8" },
-  emptySubText: { fontSize: 14, color: "#cbd5e1" },
+  emptyText: { fontSize: 16, fontWeight: "bold" },
+  emptySubText: { fontSize: 14 },
   fab: {
     position: "absolute",
     bottom: 30,
     right: 30,
-    backgroundColor: "#2563eb",
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     elevation: 5,
   },
 });

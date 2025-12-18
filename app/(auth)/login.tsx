@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext'; // Import hook Auth kita
+import { useTheme } from '@/context/ThemeContext';
 import api from '@/services/api'; // Import Axios config yang udah kita buat
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -17,6 +18,7 @@ import {
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth(); // Ambil fungsi signIn dari Context
+  const colors = useTheme();
   
   // State buat form
   const [email, setEmail] = useState('user@example.com');
@@ -58,28 +60,30 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome Back! 👋</Text>
-        <Text style={styles.subtitle}>Masuk buat lanjutin catet duit lo.</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome Back! 👋</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Masuk buat lanjutin catet duit lo.</Text>
 
         {/* Form Input */}
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
             placeholder="nama@email.com"
+            placeholderTextColor={colors.textTertiary}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
             placeholder="Rahasia negara..."
+            placeholderTextColor={colors.textTertiary}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -87,7 +91,7 @@ export default function LoginScreen() {
 
           {/* Tombol Login */}
           <TouchableOpacity 
-            style={styles.button} 
+            style={[styles.button, { backgroundColor: colors.primary }]} 
             onPress={handleLogin}
             disabled={isLoading}
           >
@@ -100,10 +104,10 @@ export default function LoginScreen() {
 
           {/* Link ke Register */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Belum punya akun? </Text>
+            <Text style={[styles.footerText, { color: colors.textSecondary }]}>Belum punya akun? </Text>
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
-                <Text style={styles.link}>Daftar dulu</Text>
+                <Text style={[styles.link, { color: colors.primary }]}>Daftar dulu</Text>
               </TouchableOpacity>
             </Link>
           </View>
@@ -116,7 +120,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 20,
   },
@@ -126,12 +129,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
     marginBottom: 30,
   },
   form: {
@@ -140,19 +141,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
     marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    backgroundColor: '#f8fafc',
   },
   button: {
-    backgroundColor: '#2563eb', // Warna biru estetik
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -169,10 +166,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: '#64748b',
+    fontSize: 14,
   },
   link: {
-    color: '#2563eb',
     fontWeight: 'bold',
   },
 });

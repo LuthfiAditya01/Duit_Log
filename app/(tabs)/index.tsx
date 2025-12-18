@@ -1,5 +1,6 @@
 import ExpenseChart from "@/components/ExpenseChart";
 import TransactionItem from "@/components/TransactionItem";
+import { useTheme } from "@/context/ThemeContext";
 import api from "@/services/api";
 import { formatRupiah } from "@/utils/formatCurrency";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +11,7 @@ import { ActivityIndicator, FlatList, Modal, RefreshControl, ScrollView, StyleSh
 
 export default function HomeScreen() {
   const router = useRouter();
+  const colors = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,7 +54,7 @@ export default function HomeScreen() {
       const response = await api.get("/auth/me");
       const userData = response.data.data;
       const token = await SecureStore.getItemAsync('user_token');
-      console.log(`Token User : ${token}`);
+      // console.log(`Token User : ${token}`);
       // Ambil saldo dari user (asumsi field balance atau saldo)
       setSaldo(userData.balance || userData.saldo || 0);
       setName(userData.name);
@@ -107,43 +109,43 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.pageContainer}>
+    <View style={[styles.pageContainer, { backgroundColor: colors.background }]}>
       <ScrollView>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* HEADER: Saldo Card */}
-        <View style={styles.header}>
-          <Text style={styles.sectionTitle}>Hallo! {name}</Text>
-          <Text style={styles.greeting}>Dompet Lo Sekarang 💸</Text>
-          <Text style={styles.saldo}>{formatRupiah(saldo)}</Text>
+        <View style={[styles.header, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Hallo! {name}</Text>
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>Dompet Lo Sekarang 💸</Text>
+          <Text style={[styles.saldo, { color: colors.text }]}>{formatRupiah(saldo)}</Text>
 
-          <View style={styles.summaryContainer}>
+          <View style={[styles.summaryContainer, { backgroundColor: colors.chipBackground }]}>
             <View style={styles.summaryItem}>
-              <View style={[styles.arrowIcon, { backgroundColor: "#dcfce7" }]}>
+              <View style={[styles.arrowIcon, { backgroundColor: colors.incomeLight }]}>
                 <Ionicons
                   name="arrow-up"
                   size={16}
-                  color="#10b981"
+                  color={colors.income}
                 />
               </View>
               <View>
-                <Text style={styles.summaryLabel}>Masuk</Text>
-                <Text style={styles.incomeText}>{formatRupiah(income)}</Text>
+                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Masuk</Text>
+                <Text style={[styles.incomeText, { color: colors.income }]}>{formatRupiah(income)}</Text>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.summaryItem}>
-              <View style={[styles.arrowIcon, { backgroundColor: "#fee2e2" }]}>
+              <View style={[styles.arrowIcon, { backgroundColor: colors.expenseLight }]}>
                 <Ionicons
                   name="arrow-down"
                   size={16}
-                  color="#ef4444"
+                  color={colors.expense}
                 />
               </View>
               <View>
-                <Text style={styles.summaryLabel}>Keluar</Text>
-                <Text style={styles.expenseText}>{formatRupiah(expense)}</Text>
+                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Keluar</Text>
+                <Text style={[styles.expenseText, { color: colors.expense }]}>{formatRupiah(expense)}</Text>
               </View>
             </View>
           </View>
@@ -152,27 +154,27 @@ export default function HomeScreen() {
         </View>
 
         {/* LIST TRANSAKSI */}
-        <View style={styles.content}>
+        <View style={[styles.content, { backgroundColor: colors.background }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Riwayat Transaksi</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Riwayat Transaksi</Text>
             
             {/* Filter Bulan & Tahun */}
             <View style={styles.filterContainer}>
               <TouchableOpacity
-                style={styles.filterButton}
+                style={[styles.filterButton, { backgroundColor: colors.primaryLight, borderColor: colors.border }]}
                 onPress={() => setShowMonthPicker(true)}
               >
-                <Ionicons name="calendar-outline" size={18} color="#2563eb" />
-                <Text style={styles.filterText}>{getMonthName(selectedMonth)}</Text>
-                <Ionicons name="chevron-down" size={16} color="#64748b" />
+                <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                <Text style={[styles.filterText, { color: colors.primary }]}>{getMonthName(selectedMonth)}</Text>
+                <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.filterButton}
+                style={[styles.filterButton, { backgroundColor: colors.primaryLight, borderColor: colors.border }]}
                 onPress={() => setShowYearPicker(true)}
               >
-                <Text style={styles.filterText}>{selectedYear}</Text>
-                <Ionicons name="chevron-down" size={16} color="#64748b" />
+                <Text style={[styles.filterText, { color: colors.primary }]}>{selectedYear}</Text>
+                <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -180,7 +182,7 @@ export default function HomeScreen() {
           {loading ? (
             <ActivityIndicator
               size="large"
-              color="#2563eb"
+              color={colors.primary}
               style={{ marginTop: 20 }}
             />
           ) : (
@@ -209,12 +211,13 @@ export default function HomeScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
+                  colors={[colors.primary]}
                 />
               }
               ListEmptyComponent={
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyText}>Belum ada transaksi nih.</Text>
-                  <Text style={styles.emptySubText}>Yuk catet duit jajan lo!</Text>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Belum ada transaksi nih.</Text>
+                  <Text style={[styles.emptySubText, { color: colors.textTertiary }]}>Yuk catet duit jajan lo!</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -225,7 +228,7 @@ export default function HomeScreen() {
 
       {/* FAB (Floating Action Button) buat Nambah Transaksi */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadowColor }]}
         onPress={() => router.push("/(transactions)/add")}
       >
         <Ionicons
@@ -244,19 +247,19 @@ export default function HomeScreen() {
         onRequestClose={() => setShowMonthPicker(false)}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}
           activeOpacity={1}
           onPress={() => setShowMonthPicker(false)}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Pilih Bulan</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.modalBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Pilih Bulan</Text>
             <ScrollView>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
                 <TouchableOpacity
                   key={month}
                   style={[
                     styles.pickerItem,
-                    selectedMonth === month && styles.pickerItemSelected
+                    selectedMonth === month && { backgroundColor: colors.primaryLight }
                   ]}
                   onPress={() => {
                     setSelectedMonth(month);
@@ -266,13 +269,14 @@ export default function HomeScreen() {
                   <Text
                     style={[
                       styles.pickerItemText,
-                      selectedMonth === month && styles.pickerItemTextSelected
+                      { color: colors.text },
+                      selectedMonth === month && { color: colors.primary }
                     ]}
                   >
                     {getMonthName(month)}
                   </Text>
                   {selectedMonth === month && (
-                    <Ionicons name="checkmark" size={20} color="#2563eb" />
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -289,19 +293,19 @@ export default function HomeScreen() {
         onRequestClose={() => setShowYearPicker(false)}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}
           activeOpacity={1}
           onPress={() => setShowYearPicker(false)}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Pilih Tahun</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.modalBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Pilih Tahun</Text>
             <ScrollView>
               {generateYears().map((year) => (
                 <TouchableOpacity
                   key={year}
                   style={[
                     styles.pickerItem,
-                    selectedYear === year && styles.pickerItemSelected
+                    selectedYear === year && { backgroundColor: colors.primaryLight }
                   ]}
                   onPress={() => {
                     setSelectedYear(year);
@@ -311,13 +315,14 @@ export default function HomeScreen() {
                   <Text
                     style={[
                       styles.pickerItemText,
-                      selectedYear === year && styles.pickerItemTextSelected
+                      { color: colors.text },
+                      selectedYear === year && { color: colors.primary }
                     ]}
                   >
                     {year}
                   </Text>
                   {selectedYear === year && (
-                    <Ionicons name="checkmark" size={20} color="#2563eb" />
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -332,19 +337,15 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
-    backgroundColor: "#f8fafc",
   },
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
   },
   header: {
-    backgroundColor: "#fff",
     padding: 20,
     paddingTop: 60, // Space buat status bar
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -352,13 +353,11 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    color: "#64748b",
     marginBottom: 5,
   },
   saldo: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#1e293b",
     marginBottom: 20,
   },
   filterContainer: {
@@ -370,17 +369,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#eff6ff",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#dbeafe",
   },
   filterText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#2563eb",
   },
   sectionHeader: {
     flexDirection: "column",
@@ -390,17 +386,14 @@ const styles = StyleSheet.create({
   },
   filterInfo: {
     fontSize: 14,
-    color: "#64748b",
     fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
     width: "80%",
@@ -409,7 +402,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1e293b",
     marginBottom: 15,
     textAlign: "center",
   },
@@ -426,15 +418,12 @@ const styles = StyleSheet.create({
   },
   pickerItemText: {
     fontSize: 16,
-    color: "#1e293b",
   },
   pickerItemTextSelected: {
-    color: "#2563eb",
     fontWeight: "600",
   },
   summaryContainer: {
     flexDirection: "row",
-    backgroundColor: "#f1f5f9",
     borderRadius: 16,
     padding: 15,
     justifyContent: "space-around",
@@ -446,7 +435,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
-    backgroundColor: "#cbd5e1",
     height: "80%",
   },
   arrowIcon: {
@@ -455,17 +443,14 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: "#64748b",
   },
   incomeText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#10b981",
   },
   expenseText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ef4444",
   },
   content: {
     flex: 1,
@@ -474,7 +459,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1e293b",
     marginBottom: 15,
   },
   emptyState: {
@@ -484,23 +468,19 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#94a3b8",
   },
   emptySubText: {
     fontSize: 14,
-    color: "#cbd5e1",
   },
   fab: {
     position: "absolute",
     bottom: 30,
     right: 30,
-    backgroundColor: "#2563eb",
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#2563eb",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

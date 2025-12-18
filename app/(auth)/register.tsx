@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import api from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -17,6 +18,7 @@ import {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const colors = useTheme();
   
   // State form
   const [name, setName] = useState('');
@@ -66,30 +68,32 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.title}>Buat Akun Baru 🚀</Text>
-          <Text style={styles.subtitle}>Mulai atur keuangan lo biar gak boncos.</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Buat Akun Baru 🚀</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Mulai atur keuangan lo biar gak boncos.</Text>
 
           {/* Form Input */}
           <View style={styles.form}>
             
             {/* Input Nama */}
-            <Text style={styles.label}>Nama Lengkap</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Nama Lengkap</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
               placeholder="Budi Santoso"
+              placeholderTextColor={colors.textTertiary}
               value={name}
               onChangeText={setName}
             />
 
             {/* Input Email */}
-            <Text style={styles.label}>Email</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
               placeholder="nama@email.com"
+              placeholderTextColor={colors.textTertiary}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -97,10 +101,11 @@ export default function RegisterScreen() {
             />
 
             {/* Input Password */}
-            <Text style={styles.label}>Password</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
               placeholder="Minimal 6 karakter"
+              placeholderTextColor={colors.textTertiary}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -108,7 +113,7 @@ export default function RegisterScreen() {
 
             {/* Tombol Register */}
             <TouchableOpacity 
-              style={styles.button} 
+              style={[styles.button, { backgroundColor: colors.success }]} 
               onPress={handleRegister}
               disabled={isLoading}
             >
@@ -121,10 +126,10 @@ export default function RegisterScreen() {
 
             {/* Link ke Login */}
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Udah punya akun? </Text>
+              <Text style={[styles.footerText, { color: colors.textSecondary }]}>Udah punya akun? </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.link}>Login aja</Text>
+                  <Text style={[styles.link, { color: colors.success }]}>Login aja</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -138,7 +143,6 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -151,12 +155,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
     marginBottom: 30,
   },
   form: {
@@ -165,19 +167,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
     marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    backgroundColor: '#f8fafc',
   },
   button: {
-    backgroundColor: '#10b981', // Gw ganti warna ijo biar beda sama Login
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -194,10 +192,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: '#64748b',
+    fontSize: 14,
   },
   link: {
-    color: '#10b981', // Warna ijo juga
     fontWeight: 'bold',
   },
 });

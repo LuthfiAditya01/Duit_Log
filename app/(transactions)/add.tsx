@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import api from '@/services/api';
 import { formatRupiah } from '@/utils/formatCurrency';
 import { syncBillReminders } from '@/utils/syncReminders'; // Opsional, best practice aja
@@ -28,6 +29,7 @@ interface Category {
 
 export default function AddTransactionScreen() {
   const router = useRouter();
+  const colors = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
@@ -136,51 +138,52 @@ export default function AddTransactionScreen() {
       style={{ flex: 1 }} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tambah Transaksi</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Tambah Transaksi</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { backgroundColor: colors.background }]}>
         
         {/* 1. Toggle Income/Expense */}
-        <View style={styles.typeContainer}>
+        <View style={[styles.typeContainer, { backgroundColor: colors.chipBackground }]}>
           <TouchableOpacity 
-            style={[styles.typeButton, type === 'expense' && styles.activeExpense]} 
+            style={[styles.typeButton, type === 'expense' && { backgroundColor: colors.expense }]} 
             onPress={() => setType('expense')}
           >
-            <Ionicons name="arrow-down-circle" size={20} color={type === 'expense' ? '#fff' : '#ef4444'} />
-            <Text style={[styles.typeText, type === 'expense' && styles.activeText]}>Pengeluaran</Text>
+            <Ionicons name="arrow-down-circle" size={20} color={type === 'expense' ? '#fff' : colors.expense} />
+            <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'expense' && styles.activeText]}>Pengeluaran</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.typeButton, type === 'income' && styles.activeIncome]} 
+            style={[styles.typeButton, type === 'income' && { backgroundColor: colors.income }]} 
             onPress={() => setType('income')}
           >
-            <Ionicons name="arrow-up-circle" size={20} color={type === 'income' ? '#fff' : '#10b981'} />
-            <Text style={[styles.typeText, type === 'income' && styles.activeText]}>Pemasukan</Text>
+            <Ionicons name="arrow-up-circle" size={20} color={type === 'income' ? '#fff' : colors.income} />
+            <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'income' && styles.activeText]}>Pemasukan</Text>
           </TouchableOpacity>
         </View>
 
         {/* 2. Input Nominal */}
-        <Text style={styles.label}>Nominal (Rp)</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Nominal (Rp)</Text>
         <TextInput
-          style={styles.amountInput}
+          style={[styles.amountInput, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
           placeholder="0"
+          placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
           value={amount}
           onChangeText={setAmount}
         />
         {/* Helper text buat liat format rupiah pas ngetik */}
-        {amount ? <Text style={styles.helperText}>{formatRupiah(parseInt(amount))}</Text> : null}
+        {amount ? <Text style={[styles.helperText, { color: colors.textSecondary }]}>{formatRupiah(parseInt(amount))}</Text> : null}
 
         {/* 3. Input Tanggal */}
-        <Text style={styles.label}>Tanggal</Text>
-        <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-          <Ionicons name="calendar-outline" size={20} color="#64748b" />
-          <Text style={styles.dateText}>{date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Tanggal</Text>
+        <TouchableOpacity style={[styles.dateButton, { backgroundColor: colors.inputBackground, borderColor: colors.border }]} onPress={() => setShowDatePicker(true)}>
+          <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
+          <Text style={[styles.dateText, { color: colors.text }]}>{date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
         </TouchableOpacity>
 
         {showDatePicker && (
@@ -194,21 +197,21 @@ export default function AddTransactionScreen() {
         )}
 
         {/* 4. Pilih Kategori */}
-        <Text style={styles.label}>Kategori</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Kategori</Text>
         {isLoadingCategories ? (
           <View style={styles.loadingCategories}>
-            <ActivityIndicator size="small" color="#2563eb" />
-            <Text style={styles.loadingText}>Memuat kategori...</Text>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Memuat kategori...</Text>
           </View>
         ) : categories.length === 0 ? (
           <View style={styles.emptyCategories}>
-            <Text style={styles.emptyText}>Belum ada kategori untuk {type === 'expense' ? 'pengeluaran' : 'pemasukan'}</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Belum ada kategori untuk {type === 'expense' ? 'pengeluaran' : 'pemasukan'}</Text>
             <TouchableOpacity 
-              style={styles.createCategoryButton}
+              style={[styles.createCategoryButton, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}
               onPress={() => router.push('/(categories)/create')}
             >
-              <Ionicons name="add-circle-outline" size={16} color="#2563eb" />
-              <Text style={styles.createCategoryText}>Buat Kategori</Text>
+              <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.createCategoryText, { color: colors.primary }]}>Buat Kategori</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -222,12 +225,14 @@ export default function AddTransactionScreen() {
                   key={cat._id}
                   style={[
                     styles.chip,
+                    { backgroundColor: colors.chipBackground },
                     isSelected && { backgroundColor: categoryColor }
                   ]}
                   onPress={() => setCategory(cat._id)}
                 >
                   <Text style={[
                     styles.chipText,
+                    { color: colors.textSecondary },
                     isSelected && styles.activeChipText
                   ]}>
                     {cat.name}
@@ -237,20 +242,21 @@ export default function AddTransactionScreen() {
             })}
             {/* Chip Tambah Kategori */}
             <TouchableOpacity
-              style={styles.addCategoryChip}
+              style={[styles.addCategoryChip, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}
               onPress={() => router.push('/(categories)/create')}
             >
-              <Ionicons name="add-circle-outline" size={16} color="#2563eb" />
-              <Text style={styles.addCategoryText}>Tambah Kategori</Text>
+              <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.addCategoryText, { color: colors.primary }]}>Tambah Kategori</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* 5. Deskripsi (Opsional) */}
-        <Text style={styles.label}>Catatan (Opsional)</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Catatan (Opsional)</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
           placeholder="Contoh: Nasi Padang Lauk Rendang"
+          placeholderTextColor={colors.textTertiary}
           value={description}
           onChangeText={setDescription}
         />
@@ -258,8 +264,8 @@ export default function AddTransactionScreen() {
       </ScrollView>
 
       {/* Footer Button */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={isLoading}>
+      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} onPress={handleSave} disabled={isLoading}>
           {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Simpan Transaksi</Text>}
         </TouchableOpacity>
       </View>
@@ -273,9 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     paddingTop: 50,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
   },
   backButton: {
     marginRight: 15,
@@ -283,14 +287,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   content: {
     padding: 20,
   },
   typeContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
@@ -312,7 +314,6 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontWeight: '600',
-    color: '#64748b',
   },
   activeText: {
     color: '#fff',
@@ -320,36 +321,29 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
     marginBottom: 8,
     marginTop: 15,
   },
   amountInput: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e293b',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
     paddingVertical: 10,
   },
   helperText: {
     fontSize: 14,
-    color: '#64748b',
     marginTop: 5,
   },
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     padding: 12,
     borderRadius: 12,
     gap: 10,
   },
   dateText: {
     fontSize: 16,
-    color: '#1e293b',
   },
   categoryContainer: {
     flexDirection: 'row',
@@ -357,7 +351,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: '#f1f5f9',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -366,7 +359,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563eb',
   },
   chipText: {
-    color: '#64748b',
     fontSize: 14,
   },
   activeChipText: {
@@ -374,22 +366,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    color: '#1e293b',
   },
   footer: {
     padding: 20,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
   },
   saveButton: {
-    backgroundColor: '#2563eb',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -407,7 +393,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   loadingText: {
-    color: '#64748b',
     fontSize: 14,
   },
   emptyCategories: {
@@ -415,7 +400,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#64748b',
     fontSize: 14,
     marginBottom: 12,
     textAlign: 'center',
@@ -427,12 +411,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#eff6ff',
     borderWidth: 1,
-    borderColor: '#2563eb',
   },
   createCategoryText: {
-    color: '#2563eb',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -440,16 +421,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#eff6ff',
     borderWidth: 1,
-    borderColor: '#2563eb',
     borderStyle: 'dashed',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   addCategoryText: {
-    color: '#2563eb',
     fontSize: 14,
     fontWeight: '600',
   },

@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
+import { useTheme, useThemeContext } from '@/context/ThemeContext';
 import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -17,6 +18,8 @@ import {
 export default function ProfileScreen() {
   const auth = useAuth();
   const router = useRouter();
+  const colors = useTheme();
+  const { isDarkMode, toggleTheme } = useThemeContext();
   
   if (!auth) {
     return null; // Atau bisa return loading screen
@@ -78,35 +81,43 @@ export default function ProfileScreen() {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={[styles.iconBox, isDestructive && styles.destructiveIconBox]}>
-        <Ionicons name={icon} size={20} color={isDestructive ? '#ef4444' : '#1e293b'} />
+      <View style={[
+        styles.iconBox, 
+        { backgroundColor: isDestructive ? colors.errorLight : colors.iconBackground }
+      ]}>
+        <Ionicons name={icon} size={20} color={isDestructive ? colors.error : colors.text} />
       </View>
-      <Text style={[styles.menuLabel, isDestructive && styles.destructiveLabel]}>{label}</Text>
+      <Text style={[
+        styles.menuLabel, 
+        { color: isDestructive ? colors.error : colors.text }
+      ]}>
+        {label}
+      </Text>
       
       {rightElement ? rightElement : (
-        <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
+        <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
       )}
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
       
       {/* HEADER PROFILE */}
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
+      <View style={[styles.header, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
+        <View style={[styles.avatarContainer, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
+          <Text style={[styles.avatarText, { color: colors.primary }]}>{getInitials(user?.name)}</Text>
         </View>
-        <Text style={styles.name}>{user?.name || 'User'}</Text>
-        <Text style={styles.email}>{user?.email || 'email@example.com'}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'User'}</Text>
+        <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email || 'email@example.com'}</Text>
         
         {/* Chip Member (Hiasan) */}
         {/* <View style={styles.badge}>
@@ -116,14 +127,14 @@ export default function ProfileScreen() {
 
       {/* MENU GROUP 1: AKUN */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Akun</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Akun</Text>
+        <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
           <MenuItem 
             icon="person-outline" 
             label="Edit Profil" 
             onPress={() => router.push('/(profile)/edit')} 
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <MenuItem 
             icon="lock-closed-outline" 
             label="Ganti Password" 
@@ -134,8 +145,8 @@ export default function ProfileScreen() {
 
       {/* MENU GROUP 2: MANAJEMEN */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Manajemen</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Manajemen</Text>
+        <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
           <MenuItem 
             icon="pricetags-outline" 
             label="Kelola Kategori" 
@@ -146,8 +157,8 @@ export default function ProfileScreen() {
 
       {/* MENU GROUP 3: PREFERENSI */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferensi</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferensi</Text>
+        <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
           <MenuItem 
             icon="notifications-outline" 
             label="Notifikasi" 
@@ -159,25 +170,31 @@ export default function ProfileScreen() {
               />
             }
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <MenuItem 
             icon="moon-outline" 
             label="Dark Mode" 
-            onPress={() => Alert.alert('Sabar', 'Fitur ini menyusul bos!')}
+            rightElement={
+              <Switch 
+                value={isDarkMode} 
+                onValueChange={toggleTheme}
+                trackColor={{ false: '#cbd5e1', true: '#2563eb' }}
+              />
+            }
           />
         </View>
       </View>
 
       {/* MENU GROUP 4: LAINNYA */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Lainnya</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Lainnya</Text>
+        <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
           <MenuItem 
             icon="help-circle-outline" 
             label="FAQ" 
             onPress={() => router.push('/(faq)/' as any)} 
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <MenuItem 
             icon="information-circle-outline" 
             label="Tentang Aplikasi" 
@@ -188,7 +205,7 @@ export default function ProfileScreen() {
 
       {/* LOGOUT BUTTON */}
       <View style={[styles.section, { marginBottom: 40 }]}>
-        <View style={styles.menuContainer}>
+        <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
           <MenuItem 
             icon="log-out-outline" 
             label="Keluar Akun" 
@@ -198,7 +215,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Text style={styles.versionText}>Duit Log v1.0.0 (Beta)</Text>
+      <Text style={[styles.versionText, { color: colors.textTertiary }]}>Duit Log v1.0.0 (Beta)</Text>
       <View style={{ height: 20 }} />
 
     </ScrollView>
@@ -208,7 +225,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -218,10 +234,8 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     paddingVertical: 30,
-    backgroundColor: '#fff',
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -232,27 +246,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#eff6ff',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
     borderWidth: 2,
-    borderColor: '#2563eb',
   },
   avatarText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2563eb',
   },
   name: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 5,
   },
   email: {
     fontSize: 14,
-    color: '#64748b',
     marginBottom: 15,
   },
   badge: {
@@ -273,15 +282,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
     marginBottom: 10,
     marginLeft: 5,
   },
   menuContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 5,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -296,7 +302,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -307,21 +312,17 @@ const styles = StyleSheet.create({
   menuLabel: {
     flex: 1,
     fontSize: 16,
-    color: '#334155',
     fontWeight: '500',
   },
   destructiveLabel: {
-    color: '#ef4444',
     fontWeight: 'bold',
   },
   divider: {
     height: 1,
-    backgroundColor: '#f1f5f9',
     marginLeft: 62, // Biar garisnya gak nabrak icon
   },
   versionText: {
     textAlign: 'center',
-    color: '#cbd5e1',
     fontSize: 12,
     marginBottom: 20,
   },

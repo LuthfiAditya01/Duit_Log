@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider, useThemeContext } from "@/context/ThemeContext";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar"; // 1. Import StatusBar
@@ -15,6 +16,27 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+// Inner component untuk akses theme context
+function RootLayoutContent() {
+  const { isDarkMode, colors } = useThemeContext();
+
+  return (
+    <>
+      <StatusBar 
+        style={isDarkMode ? "light" : "dark"} 
+        translucent={false} 
+        backgroundColor={colors.background} 
+      />
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </SafeAreaView>
+    </>
+  );
+}
 
 export default function RootLayout() {
   useEffect(() => {
@@ -43,17 +65,14 @@ export default function RootLayout() {
 
     setupNotifications();
   }, []);
+  
   return (
-    // Bungkus semua pake AuthProvider
+    // Bungkus semua pake AuthProvider dan ThemeProvider
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="dark" translucent={false} backgroundColor="#fff" />
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-          <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-        </SafeAreaView>
+        <ThemeProvider>
+          <RootLayoutContent />
+        </ThemeProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

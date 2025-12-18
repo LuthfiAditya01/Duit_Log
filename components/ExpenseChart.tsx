@@ -1,3 +1,4 @@
+import { useTheme, useThemeContext } from '@/context/ThemeContext';
 import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
@@ -9,6 +10,9 @@ interface ExpenseChartProps {
 }
 
 export default function ExpenseChart({ transactions }: ExpenseChartProps) {
+  const colors = useTheme();
+  const { isDarkMode } = useThemeContext();
+  
   // 1. Filter cuma Pengeluaran
   const expenses = transactions.filter((t) => t.type === 'expense');
 
@@ -64,23 +68,27 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
       name: categoryName,
       population: groupedData[categoryName].amount,
       color: categoryColor,
-      legendFontColor: '#7F7F7F',
+      legendFontColor: colors.textSecondary,
       legendFontSize: 12,
     };
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Analisis Pengeluaran 📉</Text>
+    <View style={[styles.container, { backgroundColor: colors.card, shadowColor: colors.shadowColor }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Analisis Pengeluaran 📉</Text>
       <PieChart
         data={chartData}
         width={screenWidth - 40} // Lebar layar dikurangin padding
         height={220}
         chartConfig={{
-          backgroundColor: '#ffffff',
-          backgroundGradientFrom: '#ffffff',
-          backgroundGradientTo: '#ffffff',
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          backgroundColor: colors.card,
+          backgroundGradientFrom: colors.card,
+          backgroundGradientTo: colors.card,
+          color: (opacity = 1) => {
+            // Adjust opacity based on theme
+            const baseColor = isDarkMode ? '255, 255, 255' : '0, 0, 0';
+            return `rgba(${baseColor}, ${opacity})`;
+          },
         }}
         accessor={'population'}
         backgroundColor={'transparent'}
@@ -94,13 +102,11 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 15,
     marginBottom: 20,
     marginTop: 10,
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -109,7 +115,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e293b',
     marginBottom: 10,
     alignSelf: 'flex-start',
   },

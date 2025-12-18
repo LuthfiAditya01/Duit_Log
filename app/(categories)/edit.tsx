@@ -1,3 +1,4 @@
+import { useTheme } from '@/context/ThemeContext';
 import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +21,7 @@ import ColorPickerWheel from 'react-native-color-picker-wheel';
 export default function EditCategoryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const colors = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -198,8 +200,8 @@ export default function EditCategoryScreen() {
 
   if (isLoadingData) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -209,59 +211,60 @@ export default function EditCategoryScreen() {
       style={{ flex: 1 }} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Kategori</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Kategori</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { backgroundColor: colors.background }]}>
         
         {/* 1. Toggle Income/Expense */}
-        <View style={styles.typeContainer}>
+        <View style={[styles.typeContainer, { backgroundColor: colors.chipBackground }]}>
           <TouchableOpacity 
-            style={[styles.typeButton, type === 'expense' && styles.activeExpense]} 
+            style={[styles.typeButton, type === 'expense' && { backgroundColor: colors.expense }]} 
             onPress={() => setType('expense')}
           >
-            <Ionicons name="arrow-down-circle" size={20} color={type === 'expense' ? '#fff' : '#ef4444'} />
-            <Text style={[styles.typeText, type === 'expense' && styles.activeText]}>Pengeluaran</Text>
+            <Ionicons name="arrow-down-circle" size={20} color={type === 'expense' ? '#fff' : colors.expense} />
+            <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'expense' && styles.activeText]}>Pengeluaran</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.typeButton, type === 'income' && styles.activeIncome]} 
+            style={[styles.typeButton, type === 'income' && { backgroundColor: colors.income }]} 
             onPress={() => setType('income')}
           >
-            <Ionicons name="arrow-up-circle" size={20} color={type === 'income' ? '#fff' : '#10b981'} />
-            <Text style={[styles.typeText, type === 'income' && styles.activeText]}>Pemasukan</Text>
+            <Ionicons name="arrow-up-circle" size={20} color={type === 'income' ? '#fff' : colors.income} />
+            <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'income' && styles.activeText]}>Pemasukan</Text>
           </TouchableOpacity>
         </View>
 
         {/* 2. Input Nama Kategori */}
-        <Text style={styles.label}>Nama Kategori</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Nama Kategori</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
           placeholder="Contoh: Makan, Transport, dll"
+          placeholderTextColor={colors.textTertiary}
           value={name}
           onChangeText={setName}
         />
 
         {/* 3. Pilih Warna */}
-        <Text style={styles.label}>Warna</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Warna</Text>
         
         {/* Preview Warna */}
         <TouchableOpacity 
-          style={styles.colorPreviewContainer}
+          style={[styles.colorPreviewContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
           onPress={() => setShowColorPicker(true)}
         >
           <View style={[styles.colorPreview, { backgroundColor: color }]} />
-          <Text style={styles.colorText}>{color}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#64748b" />
+          <Text style={[styles.colorText, { color: colors.text }]}>{color}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
 
         {/* Quick Color Picker - Warna Predefined */}
         <View style={styles.predefinedColorsContainer}>
-          <Text style={styles.subLabel}>Pilih Cepat:</Text>
+          <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Pilih Cepat:</Text>
           <View style={styles.predefinedColorsGrid}>
             {predefinedColors.map((col) => (
               <TouchableOpacity
@@ -282,10 +285,11 @@ export default function EditCategoryScreen() {
         </View>
 
         {/* Input Hex Manual (Opsional) */}
-        <Text style={styles.subLabel}>Atau Masukkan Hex Code:</Text>
+        <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Atau Masukkan Hex Code:</Text>
         <TextInput
-          style={styles.hexInput}
+          style={[styles.hexInput, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
           placeholder="#FF0000"
+          placeholderTextColor={colors.textTertiary}
           value={color}
           onChangeText={(text) => {
             // Auto tambahin # kalau belum ada
@@ -317,18 +321,18 @@ export default function EditCategoryScreen() {
       </ScrollView>
 
       {/* Footer Buttons */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={isLoading}>
+      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} onPress={handleSave} disabled={isLoading}>
           {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Simpan Perubahan</Text>}
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={styles.deleteButton} 
+          style={[styles.deleteButton, { backgroundColor: colors.errorLight, borderColor: colors.error }]} 
           onPress={handleDelete} 
           disabled={isLoading}
         >
-          <Ionicons name="trash-outline" size={20} color="#ef4444" />
-          <Text style={styles.deleteText}>Hapus Kategori</Text>
+          <Ionicons name="trash-outline" size={20} color={colors.error} />
+          <Text style={[styles.deleteText, { color: colors.error }]}>Hapus Kategori</Text>
         </TouchableOpacity>
       </View>
 
@@ -339,12 +343,12 @@ export default function EditCategoryScreen() {
         animationType="slide"
         onRequestClose={() => setShowColorPicker(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.modalBackground }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Pilih Warna</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Pilih Warna</Text>
               <TouchableOpacity onPress={() => setShowColorPicker(false)}>
-                <Ionicons name="close" size={24} color="#1e293b" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             
@@ -358,13 +362,13 @@ export default function EditCategoryScreen() {
 
             <View style={styles.modalFooter}>
               <TouchableOpacity 
-                style={styles.modalCancelButton}
+                style={[styles.modalCancelButton, { backgroundColor: colors.chipBackground }]}
                 onPress={() => setShowColorPicker(false)}
               >
-                <Text style={styles.modalCancelText}>Batal</Text>
+                <Text style={[styles.modalCancelText, { color: colors.text }]}>Batal</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={styles.modalConfirmButton}
+                style={[styles.modalConfirmButton, { backgroundColor: colors.primary }]}
                 onPress={() => setShowColorPicker(false)}
               >
                 <Text style={styles.modalConfirmText}>Pilih</Text>
@@ -382,16 +386,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8fafc",
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 20,
     paddingTop: 50,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
   },
   backButton: {
     marginRight: 15,
@@ -399,14 +400,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   content: {
     padding: 20,
   },
   typeContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
@@ -428,7 +427,6 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontWeight: '600',
-    color: '#64748b',
   },
   activeText: {
     color: '#fff',
@@ -436,32 +434,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
     marginBottom: 8,
     marginTop: 15,
   },
   subLabel: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#64748b',
     marginBottom: 8,
     marginTop: 10,
   },
   input: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    color: '#1e293b',
   },
   colorPreviewContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     padding: 12,
     borderRadius: 12,
     marginBottom: 15,
@@ -477,7 +468,6 @@ const styles = StyleSheet.create({
   colorText: {
     flex: 1,
     fontSize: 16,
-    color: '#1e293b',
     fontWeight: '500',
   },
   predefinedColorsContainer: {
@@ -503,22 +493,17 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   hexInput: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    color: '#1e293b',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 15,
     marginTop: 15,
@@ -529,18 +514,14 @@ const styles = StyleSheet.create({
   },
   switchHelperText: {
     fontSize: 12,
-    color: '#64748b',
     marginTop: 4,
   },
   footer: {
     padding: 20,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
     gap: 12,
   },
   saveButton: {
-    backgroundColor: '#2563eb',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -554,25 +535,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#ef4444',
     padding: 16,
     borderRadius: 12,
     gap: 8,
   },
   deleteText: {
-    color: '#ef4444',
     fontSize: 16,
     fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -588,7 +564,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   colorPickerContainer: {
     alignItems: 'center',
@@ -609,10 +584,8 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
   },
   modalCancelText: {
-    color: '#64748b',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -621,7 +594,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#2563eb',
   },
   modalConfirmText: {
     color: '#fff',

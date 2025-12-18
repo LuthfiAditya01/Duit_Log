@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/context/AuthContext'; // Biar bisa akses state kalo butuh
+import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
   const { isLoading } = useAuth();
+  const colors = useTheme();
 
   // Loading state handling (Opsional, biar smooth)
   if (isLoading) return null;
@@ -12,15 +14,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false, // Kita hide header default biar bisa custom sendiri nanti
-        tabBarActiveTintColor: '#2563eb', // Warna biru pas aktif
-        tabBarInactiveTintColor: '#94a3b8', // Warna abu pas gak aktif
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarStyle: {
           height: 60,
           paddingBottom: 10,
           paddingTop: 10,
-          backgroundColor: '#fff',
+          backgroundColor: colors.tabBarBackground,
           borderTopWidth: 1,
-          borderTopColor: '#f1f5f9',
+          borderTopColor: colors.tabBarBorder,
         },
         tabBarLabelStyle: {
           fontSize: 12,
