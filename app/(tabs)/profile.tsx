@@ -132,7 +132,19 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* MENU GROUP 2: PREFERENSI */}
+      {/* MENU GROUP 2: MANAJEMEN */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Manajemen</Text>
+        <View style={styles.menuContainer}>
+          <MenuItem 
+            icon="pricetags-outline" 
+            label="Kelola Kategori" 
+            onPress={() => router.push('/(categories)/' as any)} 
+          />
+        </View>
+      </View>
+
+      {/* MENU GROUP 3: PREFERENSI */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferensi</Text>
         <View style={styles.menuContainer}>
@@ -156,7 +168,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* MENU GROUP 3: LAINNYA */}
+      {/* MENU GROUP 4: LAINNYA */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Lainnya</Text>
         <View style={styles.menuContainer}>

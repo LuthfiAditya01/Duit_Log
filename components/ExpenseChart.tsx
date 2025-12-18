@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
@@ -16,25 +16,54 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
     return null; // Gak usah nampilin chart kalau gak ada pengeluaran
   }
 
-  // 2. Grouping Data (Logic Group by Category)
+  // 2. Helper function untuk extract nama kategori
+  const getCategoryName = (category: any): string => {
+    if (!category) return 'Lainnya';
+    // Kalau category adalah object (populated dari backend)
+    if (typeof category === 'object' && category !== null) {
+      return category.name || category._id || 'Lainnya';
+    }
+    // Kalau category adalah string (ID)
+    return category;
+  };
+
+  // 3. Helper function untuk extract warna kategori
+  const getCategoryColor = (category: any, fallbackColor: string): string => {
+    if (!category) return fallbackColor;
+    // Kalau category adalah object dan punya color
+    if (typeof category === 'object' && category !== null && category.color) {
+      return category.color;
+    }
+    return fallbackColor;
+  };
+
+  // 4. Grouping Data (Logic Group by Category)
   // Hasilnya: { "Makan": 50000, "Transport": 20000 }
   const groupedData = expenses.reduce((acc, curr) => {
-    if (!acc[curr.category]) {
-      acc[curr.category] = 0;
+    const categoryName = getCategoryName(curr.category);
+    if (!acc[categoryName]) {
+      acc[categoryName] = {
+        amount: 0,
+        category: curr.category // Simpan category object untuk ambil warna nanti
+      };
     }
-    acc[curr.category] += curr.amount;
+    acc[categoryName].amount += curr.amount;
     return acc;
-  }, {});
+  }, {} as Record<string, { amount: number; category: any }>);
 
-  // 3. Format Data buat Chart Kit
-  const chartData = Object.keys(groupedData).map((category, index) => {
-    // Warna-warni random (hardcoded palette biar cantik)
-    const colors = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6'];
+  // 5. Format Data buat Chart Kit
+  const chartData = Object.keys(groupedData).map((categoryName, index) => {
+    // Warna-warni fallback (hardcoded palette biar cantik)
+    const fallbackColors = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6'];
+    const fallbackColor = fallbackColors[index % fallbackColors.length];
+    
+    // Coba ambil warna dari category object, kalau gak ada pakai fallback
+    const categoryColor = getCategoryColor(groupedData[categoryName].category, fallbackColor);
     
     return {
-      name: category,
-      population: groupedData[category],
-      color: colors[index % colors.length], // Loop warna kalau kategori banyak
+      name: categoryName,
+      population: groupedData[categoryName].amount,
+      color: categoryColor,
       legendFontColor: '#7F7F7F',
       legendFontSize: 12,
     };

@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { formatRupiah } from '@/utils/formatCurrency';
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface TransactionItemProps {
-  category: string;
+  category: string; // ID kategori
   amount: number;
   type: 'income' | 'expense';
   date: string;
@@ -12,6 +12,29 @@ interface TransactionItemProps {
 
 export default function TransactionItem({ category, amount, type, date, description }: TransactionItemProps) {
   const isExpense = type === 'expense';
+  console.log(`categoryyy ${category}`)
+  console.log(`categorystringggg ${JSON.stringify(category)}`)
+  // const [categoryName, setCategoryName] = useState<string>(category); // Fallback ke ID kalau belum loaded
+
+  // Fetch nama kategori dari API
+  // useEffect(() => {
+  //   const fetchCategoryName = async () => {
+  //     if (!category) return;
+      
+  //     try {
+  //       const response = await api.get(`/categories/${category}`);
+  //       const categoryData = response.data.data || response.data;
+  //       if (categoryData?.name) {
+  //         setCategoryName(categoryData.name);
+  //       }
+  //     } catch (error) {
+  //       // Kalau error, tetap pakai ID sebagai fallback
+  //       console.error('Gagal fetch nama kategori:', error);
+  //     }
+  //   };
+
+  //   fetchCategoryName();
+  // }, [category]);
 
   return (
     <View style={styles.card}>

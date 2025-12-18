@@ -4,6 +4,7 @@ import api from "@/services/api";
 import { formatRupiah } from "@/utils/formatCurrency";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import * as SecureStore from 'expo-secure-store';
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const [saldo, setSaldo] = useState(0);
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
+  const [name, setName] = useState("")
 
   // Helper untuk convert bulan ke text
   const getMonthName = (month: number) => {
@@ -49,8 +51,11 @@ export default function HomeScreen() {
     try {
       const response = await api.get("/auth/me");
       const userData = response.data.data;
+      const token = await SecureStore.getItemAsync('user_token');
+      console.log(`Token User : ${token}`);
       // Ambil saldo dari user (asumsi field balance atau saldo)
       setSaldo(userData.balance || userData.saldo || 0);
+      setName(userData.name);
     } catch (error) {
       console.error("Gagal ambil data user:", error);
     }
@@ -102,10 +107,12 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView>
-      <View style={styles.container}>
+    <View style={styles.pageContainer}>
+      <ScrollView>
+        <View style={styles.container}>
         {/* HEADER: Saldo Card */}
         <View style={styles.header}>
+          <Text style={styles.sectionTitle}>Hallo! {name}</Text>
           <Text style={styles.greeting}>Dompet Lo Sekarang 💸</Text>
           <Text style={styles.saldo}>{formatRupiah(saldo)}</Text>
 
@@ -189,7 +196,7 @@ export default function HomeScreen() {
                   activeOpacity={0.7}
                 >
                   <TransactionItem
-                    category={item.category}
+                    category={item.category.name}
                     amount={item.amount}
                     type={item.type}
                     date={item.date}
@@ -214,19 +221,20 @@ export default function HomeScreen() {
             />
           )}
         </View>
-
-        {/* FAB (Floating Action Button) buat Nambah Transaksi */}
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => router.push("/(transactions)/add")} // Kita akan bikin route ini nanti
-        >
-          <Ionicons
-            name="add"
-            size={30}
-            color="#fff"
-          />
-        </TouchableOpacity>
       </View>
+
+      {/* FAB (Floating Action Button) buat Nambah Transaksi */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/(transactions)/add")}
+      >
+        <Ionicons
+          name="add"
+          size={30}
+          color="#fff"
+        />
+      </TouchableOpacity>
+      </ScrollView>
 
       {/* Modal Picker Bulan */}
       <Modal
@@ -317,11 +325,15 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  pageContainer: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",

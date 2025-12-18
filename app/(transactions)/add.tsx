@@ -4,7 +4,7 @@ import { syncBillReminders } from '@/utils/syncReminders'; // Opsional, best pra
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,9 +18,18 @@ import {
   View
 } from 'react-native';
 
+interface Category {
+  _id: string;
+  name: string;
+  type: 'expense' | 'income';
+  color: string | null;
+  isVisible: boolean;
+}
+
 export default function AddTransactionScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   // State Form
   const [amount, setAmount] = useState('');
@@ -32,11 +41,45 @@ export default function AddTransactionScreen() {
   // State buat DatePicker
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Daftar Kategori Umum (Bisa ditambahin)
-  const categories = [
-    'Makan', 'Transport', 'Belanja', 'Tagihan', 
-    'Hiburan', 'Kesehatan', 'Gaji', 'Bonus', 'Lainnya'
-  ];
+  // State untuk kategori dari API
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch kategori dari API
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Re-fetch kategori saat type berubah
+  useEffect(() => {
+    fetchCategories();
+    setCategory(''); // Reset category selection saat type berubah
+  }, [type]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      const allCategories: Category[] = response.data.data || [];
+      
+      // Filter kategori berdasarkan type dan isVisible
+      const filteredCategories = allCategories.filter(
+        (cat) => cat.type === type && cat.isVisible === true
+      );
+      
+      setCategories(filteredCategories);
+    } catch (error) {
+      console.error('Gagal fetch kategori:', error);
+      Alert.alert('Error', 'Gagal memuat kategori. Coba lagi nanti.');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  // Helper function untuk get warna kategori (dengan fallback)
+  const getCategoryColor = (categoryColor: string | null): string => {
+    if (categoryColor) return categoryColor;
+    // Fallback warna berdasarkan type
+    return type === 'expense' ? '#ef4444' : '#10b981';
+  };
 
   const handleSave = async () => {
     // 1. Validasi
@@ -152,17 +195,56 @@ export default function AddTransactionScreen() {
 
         {/* 4. Pilih Kategori */}
         <Text style={styles.label}>Kategori</Text>
-        <View style={styles.categoryContainer}>
-          {categories.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.chip, category === cat && styles.activeChip]}
-              onPress={() => setCategory(cat)}
+        {isLoadingCategories ? (
+          <View style={styles.loadingCategories}>
+            <ActivityIndicator size="small" color="#2563eb" />
+            <Text style={styles.loadingText}>Memuat kategori...</Text>
+          </View>
+        ) : categories.length === 0 ? (
+          <View style={styles.emptyCategories}>
+            <Text style={styles.emptyText}>Belum ada kategori untuk {type === 'expense' ? 'pengeluaran' : 'pemasukan'}</Text>
+            <TouchableOpacity 
+              style={styles.createCategoryButton}
+              onPress={() => router.push('/(categories)/create')}
             >
-              <Text style={[styles.chipText, category === cat && styles.activeChipText]}>{cat}</Text>
+              <Ionicons name="add-circle-outline" size={16} color="#2563eb" />
+              <Text style={styles.createCategoryText}>Buat Kategori</Text>
             </TouchableOpacity>
-          ))}
-        </View>
+          </View>
+        ) : (
+          <View style={styles.categoryContainer}>
+            {categories.map((cat) => {
+              const isSelected = category === cat._id;
+              const categoryColor = getCategoryColor(cat.color);
+              
+              return (
+                <TouchableOpacity
+                  key={cat._id}
+                  style={[
+                    styles.chip,
+                    isSelected && { backgroundColor: categoryColor }
+                  ]}
+                  onPress={() => setCategory(cat._id)}
+                >
+                  <Text style={[
+                    styles.chipText,
+                    isSelected && styles.activeChipText
+                  ]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            {/* Chip Tambah Kategori */}
+            <TouchableOpacity
+              style={styles.addCategoryChip}
+              onPress={() => router.push('/(categories)/create')}
+            >
+              <Ionicons name="add-circle-outline" size={16} color="#2563eb" />
+              <Text style={styles.addCategoryText}>Tambah Kategori</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 5. Deskripsi (Opsional) */}
         <Text style={styles.label}>Catatan (Opsional)</Text>
@@ -316,5 +398,59 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loadingCategories: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    gap: 10,
+  },
+  loadingText: {
+    color: '#64748b',
+    fontSize: 14,
+  },
+  emptyCategories: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#64748b',
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  createCategoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#2563eb',
+  },
+  createCategoryText: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  addCategoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#2563eb',
+    borderStyle: 'dashed',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  addCategoryText: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

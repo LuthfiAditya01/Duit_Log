@@ -1,0 +1,25 @@
+POST /categories
+
+Request Body : 
+{
+  "name": "Makan",
+  "type": "expense",
+  "color": "#FF0000"
+}
+
+GET /categories 
+Fetched Body (Array Objek)
+
+GET /categories/[id]
+Fetched Body (Data Objek)
+
+PUT /categories/[id]
+Request Body :
+{
+  "name": "Transport",
+  "type": "expense",
+  "color": "#00FF00",
+  "isVisible": true
+}
+
+DELETE /categories/[id]

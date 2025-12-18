@@ -185,7 +185,7 @@ export default function BillsScreen() {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>Gak ada tagihan.</Text>
-              <Text style={styles.emptySubText}>Hidup tenang tanpa utang? Atau karena belum dicatet aja?</Text>
+              <Text style={styles.emptySubText}>Hidup tenang tanpa tagihanark? Atau karena belum dicatet aja?</Text>
             </View>
           }
         />
