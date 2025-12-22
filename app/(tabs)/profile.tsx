@@ -20,13 +20,13 @@ export default function ProfileScreen() {
   const router = useRouter();
   const colors = useTheme();
   const { isDarkMode, toggleTheme } = useThemeContext();
-  
+
   if (!auth) {
     return null; // Atau bisa return loading screen
   }
-  
+
   const { signOut } = auth;
-  
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isNotifEnabled, setIsNotifEnabled] = useState(true); // Dummy toggle
@@ -52,9 +52,9 @@ export default function ProfileScreen() {
   const handleLogout = () => {
     Alert.alert('Keluar Akun', 'Yakin mau cabut bro?', [
       { text: 'Gak Jadi', style: 'cancel' },
-      { 
-        text: 'Keluar', 
-        style: 'destructive', 
+      {
+        text: 'Keluar',
+        style: 'destructive',
         onPress: async () => {
           await signOut();
           // Router bakal auto-redirect via AuthContext
@@ -76,24 +76,24 @@ export default function ProfileScreen() {
 
   // Komponen Menu Item biar rapi
   const MenuItem = ({ icon, label, onPress, isDestructive = false, rightElement }: any) => (
-    <TouchableOpacity 
-      style={styles.menuItem} 
+    <TouchableOpacity
+      style={styles.menuItem}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={[
-        styles.iconBox, 
+        styles.iconBox,
         { backgroundColor: isDestructive ? colors.errorLight : colors.iconBackground }
       ]}>
         <Ionicons name={icon} size={20} color={isDestructive ? colors.error : colors.text} />
       </View>
       <Text style={[
-        styles.menuLabel, 
+        styles.menuLabel,
         { color: isDestructive ? colors.error : colors.text }
       ]}>
         {label}
       </Text>
-      
+
       {rightElement ? rightElement : (
         <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
       )}
@@ -110,7 +110,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
-      
+
       {/* HEADER PROFILE */}
       <View style={[styles.header, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
         <View style={[styles.avatarContainer, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
         </View>
         <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'User'}</Text>
         <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email || 'email@example.com'}</Text>
-        
+
         {/* Chip Member (Hiasan) */}
         {/* <View style={styles.badge}>
           <Text style={styles.badgeText}>Member PRO 💎</Text>
@@ -129,16 +129,16 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Akun</Text>
         <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
-          <MenuItem 
-            icon="person-outline" 
-            label="Edit Profil" 
-            onPress={() => router.push('/(profile)/edit')} 
+          <MenuItem
+            icon="person-outline"
+            label="Edit Profil"
+            onPress={() => router.push('/(profile)/edit')}
           />
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-          <MenuItem 
-            icon="lock-closed-outline" 
-            label="Ganti Password" 
-            onPress={() => router.push('/(profile)/change-password')} 
+          <MenuItem
+            icon="lock-closed-outline"
+            label="Ganti Password"
+            onPress={() => router.push('/(profile)/change-password')}
           />
         </View>
       </View>
@@ -147,10 +147,16 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Manajemen</Text>
         <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
-          <MenuItem 
-            icon="pricetags-outline" 
-            label="Kelola Kategori" 
-            onPress={() => router.push('/(categories)/' as any)} 
+          <MenuItem
+            icon="pricetags-outline"
+            label="Kelola Kategori"
+            onPress={() => router.push('/(categories)/' as any)}
+          />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+          <MenuItem
+            icon="wallet-outline"
+            label="Kelola Sumber Keuangan"
+            onPress={() => router.push('/(wallet)/' as any)}
           />
         </View>
       </View>
@@ -159,24 +165,24 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferensi</Text>
         <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
-          <MenuItem 
-            icon="notifications-outline" 
-            label="Notifikasi" 
+          <MenuItem
+            icon="notifications-outline"
+            label="Notifikasi"
             rightElement={
-              <Switch 
-                value={isNotifEnabled} 
+              <Switch
+                value={isNotifEnabled}
                 onValueChange={setIsNotifEnabled}
                 trackColor={{ false: '#cbd5e1', true: '#2563eb' }}
               />
             }
           />
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-          <MenuItem 
-            icon="moon-outline" 
-            label="Dark Mode" 
+          <MenuItem
+            icon="moon-outline"
+            label="Dark Mode"
             rightElement={
-              <Switch 
-                value={isDarkMode} 
+              <Switch
+                value={isDarkMode}
                 onValueChange={toggleTheme}
                 trackColor={{ false: '#cbd5e1', true: '#2563eb' }}
               />
@@ -189,16 +195,16 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Lainnya</Text>
         <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
-          <MenuItem 
-            icon="help-circle-outline" 
-            label="FAQ" 
-            onPress={() => router.push('/(faq)/' as any)} 
+          <MenuItem
+            icon="help-circle-outline"
+            label="FAQ"
+            onPress={() => router.push('/(faq)/' as any)}
           />
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-          <MenuItem 
-            icon="information-circle-outline" 
-            label="Tentang Aplikasi" 
-            onPress={() => router.push('/(about)/' as any)} 
+          <MenuItem
+            icon="information-circle-outline"
+            label="Tentang Aplikasi"
+            onPress={() => router.push('/(about)/' as any)}
           />
         </View>
       </View>
@@ -206,11 +212,11 @@ export default function ProfileScreen() {
       {/* LOGOUT BUTTON */}
       <View style={[styles.section, { marginBottom: 40 }]}>
         <View style={[styles.menuContainer, { backgroundColor: colors.surface, shadowColor: colors.shadowColor }]}>
-          <MenuItem 
-            icon="log-out-outline" 
-            label="Keluar Akun" 
-            isDestructive 
-            onPress={handleLogout} 
+          <MenuItem
+            icon="log-out-outline"
+            label="Keluar Akun"
+            isDestructive
+            onPress={handleLogout}
           />
         </View>
       </View>

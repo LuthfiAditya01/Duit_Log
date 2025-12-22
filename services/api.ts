@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 // Ganti sama IP Laptop lo (kalo emulator) atau URL Vercel (kalo udah deploy)
 // PENTING: Jangan pake 'localhost' kalo run di HP fisik! Pake IP LAN (192.168.x.x)
 const API_URL = 'https://duit-log-backend.vercel.app/api'; 
-// const API_URL = 'http://192.168.1.14:3000/api'; 
+// const API_URL = 'http://192.168.1.9:3000/api'; 
 
 export const getUrl = () => {
   return API_URL;

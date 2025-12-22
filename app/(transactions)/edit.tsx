@@ -26,6 +26,15 @@ interface Category {
   isVisible: boolean;
 }
 
+interface Wallet {
+  _id: string;
+  name: string;
+  type: 'bank' | 'e-wallet' | 'cash' | 'other';
+  balance: number;
+  color: string | null;
+  isActive: boolean;
+}
+
 export default function EditTransactionScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -33,19 +42,25 @@ export default function EditTransactionScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingWallets, setIsLoadingWallets] = useState(true);
 
   // State Form
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
+  const [wallet, setWallet] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
 
   // State untuk kategori dari API
   const [categories, setCategories] = useState<Category[]>([]);
+  
+  // State untuk wallet dari API
+  const [wallets, setWallets] = useState<Wallet[]>([]);
 
-  // Fetch kategori dari API
+  // Fetch kategori dan wallet dari API
   useEffect(() => {
     fetchCategories();
+    fetchWallets();
   }, []);
 
   // Re-fetch kategori saat type berubah (hanya setelah data pertama kali di-load)
@@ -78,11 +93,54 @@ export default function EditTransactionScreen() {
     }
   };
 
+  const fetchWallets = async () => {
+    try {
+      const response = await api.get('/wallet');
+      const allWallets: Wallet[] = response.data.data || [];
+      
+      // Filter wallet yang aktif saja
+      const activeWallets = allWallets.filter(
+        (w) => w.isActive === true
+      );
+      
+      setWallets(activeWallets);
+    } catch (error) {
+      console.error('Gagal fetch wallet:', error);
+      // Jangan tampilkan alert untuk wallet karena optional
+    } finally {
+      setIsLoadingWallets(false);
+    }
+  };
+
   // Helper function untuk get warna kategori (dengan fallback)
   const getCategoryColor = (categoryColor: string | null): string => {
     if (categoryColor) return categoryColor;
     // Fallback warna berdasarkan type
     return type === 'expense' ? '#ef4444' : '#10b981';
+  };
+
+  // Helper function untuk get warna wallet (dengan fallback)
+  const getWalletColor = (walletColor: string | null, walletType: Wallet['type']): string => {
+    if (walletColor) return walletColor;
+    // Fallback warna berdasarkan type
+    const typeColors: Record<Wallet['type'], string> = {
+      'bank': '#0066CC',
+      'e-wallet': '#00A86B',
+      'cash': '#28A745',
+      'other': '#6C757D'
+    };
+    return typeColors[walletType] || colors.primary;
+  };
+
+  // Helper untuk get icon wallet
+  const getWalletIcon = (walletType: Wallet['type']): string => {
+    const icons: Record<Wallet['type'], string> = {
+      'bank': 'card-outline',
+      'e-wallet': 'wallet-outline',
+      'cash': 'cash-outline',
+      'other': 'ellipse-outline'
+    };
+    return icons[walletType] || 'ellipse-outline';
   };
 
   // Fetch data transaction pas pertama kali buka
@@ -117,6 +175,16 @@ export default function EditTransactionScreen() {
       
       setDescription(transactionData.description || "");
       setType(transactionData.type || "expense");
+      
+      // Handle wallet - bisa berupa object atau ID string
+      const walletValue = transactionData.wallet;
+      if (typeof walletValue === 'object' && walletValue !== null && walletValue._id) {
+        setWallet(walletValue._id);
+      } else if (typeof walletValue === 'string') {
+        setWallet(walletValue);
+      } else {
+        setWallet("");
+      }
     } catch (error: any) {
       console.error("Gagal ambil data transaksi:", error);
       
@@ -150,12 +218,20 @@ export default function EditTransactionScreen() {
       const transactionId = params.id as string;
       
       // 2. Kirim ke Backend (PUT untuk update)
-      const payload = {
+      const payload: any = {
         amount: parseInt(amount),
         category,
         type,
         description: description || undefined, // Opsional
       };
+
+      // Tambahkan wallet jika dipilih (optional)
+      if (wallet) {
+        payload.wallet = wallet;
+      } else {
+        // Jika wallet dikosongkan, kirim null atau undefined
+        payload.wallet = undefined;
+      }
 
       await api.put(`/transactions/${transactionId}`, payload);
 
@@ -307,7 +383,85 @@ export default function EditTransactionScreen() {
           </View>
         )}
 
-        {/* 4. Deskripsi (Opsional) */}
+        {/* 4. Pilih Wallet (Opsional) */}
+        <Text style={[styles.label, { color: colors.text }]}>Wallet (Opsional)</Text>
+        {isLoadingWallets ? (
+          <View style={styles.loadingCategories}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Memuat wallet...</Text>
+          </View>
+        ) : wallets.length === 0 ? (
+          <View style={styles.emptyCategories}>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Belum ada wallet aktif</Text>
+            <TouchableOpacity 
+              style={[styles.createCategoryButton, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}
+              onPress={() => router.push('/(wallet)/add')}
+            >
+              <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.createCategoryText, { color: colors.primary }]}>Buat Wallet</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.categoryContainer}>
+            {/* Option untuk tidak memilih wallet */}
+            <TouchableOpacity
+              style={[
+                styles.chip,
+                { backgroundColor: colors.chipBackground },
+                !wallet && { backgroundColor: colors.textTertiary }
+              ]}
+              onPress={() => setWallet('')}
+            >
+              <Text style={[
+                styles.chipText,
+                { color: colors.textSecondary },
+                !wallet && styles.activeChipText
+              ]}>
+                Tidak Dipilih
+              </Text>
+            </TouchableOpacity>
+            
+            {wallets.map((w) => {
+              const isSelected = wallet === w._id;
+              const walletColor = getWalletColor(w.color, w.type);
+              
+              return (
+                <TouchableOpacity
+                  key={w._id}
+                  style={[
+                    styles.chip,
+                    { backgroundColor: colors.chipBackground },
+                    isSelected && { backgroundColor: walletColor }
+                  ]}
+                  onPress={() => setWallet(w._id)}
+                >
+                  <Ionicons 
+                    name={getWalletIcon(w.type) as any} 
+                    size={14} 
+                    color={isSelected ? '#fff' : walletColor} 
+                  />
+                  <Text style={[
+                    styles.chipText,
+                    { color: colors.textSecondary },
+                    isSelected && styles.activeChipText
+                  ]}>
+                    {w.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            {/* Chip Tambah Wallet */}
+            <TouchableOpacity
+              style={[styles.addCategoryChip, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}
+              onPress={() => router.push('/(wallet)/add')}
+            >
+              <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.addCategoryText, { color: colors.primary }]}>Tambah Wallet</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 5. Deskripsi (Opsional) */}
         <Text style={[styles.label, { color: colors.text }]}>Catatan (Opsional)</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
@@ -401,9 +555,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    gap: 6,
   },
   activeChip: {
     backgroundColor: '#2563eb',

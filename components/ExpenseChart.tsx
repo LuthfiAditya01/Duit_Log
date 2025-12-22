@@ -1,4 +1,5 @@
 import { useTheme, useThemeContext } from '@/context/ThemeContext';
+import { formatRupiah } from '@/utils/formatCurrency';
 import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
@@ -51,7 +52,7 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
         category: curr.category // Simpan category object untuk ambil warna nanti
       };
     }
-    acc[categoryName].amount += curr.amount;
+    acc[categoryName].amount += curr.amount || 0;
     return acc;
   }, {} as Record<string, { amount: number; category: any }>);
 
@@ -64,9 +65,12 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
     // Coba ambil warna dari category object, kalau gak ada pakai fallback
     const categoryColor = getCategoryColor(groupedData[categoryName].category, fallbackColor);
     
+    // Format amount untuk display di legend (chart tetap pakai number untuk perhitungan)
+    const formattedAmount = formatRupiah(groupedData[categoryName].amount);
+    
     return {
-      name: categoryName,
-      population: groupedData[categoryName].amount,
+      name: `${categoryName}`, // Format di legend
+      population: groupedData[categoryName].amount, // Tetap number untuk chart
       color: categoryColor,
       legendFontColor: colors.textSecondary,
       legendFontSize: 12,
@@ -94,7 +98,7 @@ export default function ExpenseChart({ transactions }: ExpenseChartProps) {
         backgroundColor={'transparent'}
         paddingLeft={'15'}
         center={[10, 0]}
-        absolute // Biar angkanya muncul di chart
+        // Hapus absolute supaya angka unformatted tidak muncul di chart
       />
     </View>
   );

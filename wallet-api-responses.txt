@@ -1,0 +1,350 @@
+================================================================================
+CONTOH RESPONSE API WALLET
+================================================================================
+
+1. GET /api/wallet
+   Mengambil semua wallet milik user yang login
+   
+   Request:
+   GET /api/wallet
+   Headers: Authorization: Bearer <token>
+   
+   Response Success (200):
+   {
+     "data": [
+       {
+         "_id": "wallet123abcdef123456789",
+         "name": "BCA",
+         "type": "bank",
+         "balance": 2500000,
+         "color": "#0066CC",
+         "user": "12345abcdef1234567890123",
+         "isActive": true,
+         "createdAt": "2024-01-01T00:00:00.000Z",
+         "updatedAt": "2024-12-15T10:30:00.000Z"
+       },
+       {
+         "_id": "wallet456abcdef123456789",
+         "name": "GoPay",
+         "type": "e-wallet",
+         "balance": 85000,
+         "color": "#00A86B",
+         "user": "12345abcdef1234567890123",
+         "isActive": true,
+         "createdAt": "2024-01-05T00:00:00.000Z",
+         "updatedAt": "2024-12-10T07:30:00.000Z"
+       },
+       {
+         "_id": "wallet789abcdef123456789",
+         "name": "Cash",
+         "type": "cash",
+         "balance": 50000,
+         "color": "#28A745",
+         "user": "12345abcdef1234567890123",
+         "isActive": true,
+         "createdAt": "2024-01-10T00:00:00.000Z",
+         "updatedAt": "2024-12-20T14:00:00.000Z"
+       },
+       {
+         "_id": "wallet999abcdef123456789",
+         "name": "Dana",
+         "type": "e-wallet",
+         "balance": 0,
+         "color": null,
+         "user": "12345abcdef1234567890123",
+         "isActive": false,
+         "createdAt": "2024-02-01T00:00:00.000Z",
+         "updatedAt": "2024-11-15T08:00:00.000Z"
+       }
+     ],
+     "count": 4
+   }
+   
+   Response Error - Unauthorized (401):
+   {
+     "message": "Unauthorized. Login dulu bos."
+   }
+   
+   Response Error - Server Error (500):
+   {
+     "message": "Server error.",
+     "error": "Error message details"
+   }
+
+================================================================================
+
+2. POST /api/wallet
+   Membuat wallet baru
+   
+   Request:
+   POST /api/wallet
+   Headers: Authorization: Bearer <token>
+   Body:
+   {
+     "name": "Mandiri",
+     "type": "bank",
+     "color": "#FF0000",
+     "balance": 1000000
+   }
+   
+   Response Success (201):
+   {
+     "message": "Wallet berhasil dibuat.",
+     "data": {
+       "_id": "wallet111abcdef123456789",
+       "name": "Mandiri",
+       "type": "bank",
+       "balance": 1000000,
+       "color": "#FF0000",
+       "user": "12345abcdef1234567890123",
+       "isActive": true,
+       "createdAt": "2024-12-21T10:00:00.000Z",
+       "updatedAt": "2024-12-21T10:00:00.000Z"
+     }
+   }
+   
+   Response Error - Data Tidak Lengkap (400):
+   {
+     "message": "Name dan type wajib diisi."
+   }
+   
+   Response Error - Type Tidak Valid (400):
+   {
+     "message": "Type wallet harus salah satu dari: bank, e-wallet, cash, other."
+   }
+   
+   Response Error - Balance Negatif (400):
+   {
+     "message": "Saldo wallet tidak boleh negatif."
+   }
+   
+   Response Error - Duplikasi Nama (409):
+   {
+     "message": "Wallet dengan nama yang sama sudah ada. Coba nama lain."
+   }
+   
+   Response Error - Unauthorized (401):
+   {
+     "message": "Unauthorized. Login dulu bos."
+   }
+   
+   Response Error - Server Error (500):
+   {
+     "message": "Server error.",
+     "error": "Error message details"
+   }
+
+================================================================================
+
+3. GET /api/wallet/[id]
+   Mengambil detail wallet tertentu
+   
+   Request:
+   GET /api/wallet/wallet123abcdef123456789
+   Headers: Authorization: Bearer <token>
+   
+   Response Success (200):
+   {
+     "message": "Wallet berhasil diambil.",
+     "data": {
+       "_id": "wallet123abcdef123456789",
+       "name": "BCA",
+       "type": "bank",
+       "balance": 2500000,
+       "color": "#0066CC",
+       "user": "12345abcdef1234567890123",
+       "isActive": true,
+       "createdAt": "2024-01-01T00:00:00.000Z",
+       "updatedAt": "2024-12-15T10:30:00.000Z"
+     }
+   }
+   
+   Response Error - Wallet Tidak Ditemukan (404):
+   {
+     "message": "Wallet gak ketemu."
+   }
+   
+   Response Error - Bukan Milik User (403):
+   {
+     "message": "Bukan punya lo ini mah."
+   }
+   
+   Response Error - Unauthorized (401):
+   {
+     "message": "Unauthorized. Login dulu bos."
+   }
+   
+   Response Error - Server Error (500):
+   {
+     "message": "Server error.",
+     "error": "Error message details"
+   }
+
+================================================================================
+
+4. PUT /api/wallet/[id]
+   Update wallet
+   
+   Request:
+   PUT /api/wallet/wallet123abcdef123456789
+   Headers: Authorization: Bearer <token>
+   Body:
+   {
+     "name": "BCA Premium",
+     "color": "#0066FF",
+     "balance": 3000000
+   }
+   
+   Response Success (200):
+   {
+     "message": "Wallet berhasil diupdate.",
+     "data": {
+       "_id": "wallet123abcdef123456789",
+       "name": "BCA Premium",
+       "type": "bank",
+       "balance": 3000000,
+       "color": "#0066FF",
+       "user": "12345abcdef1234567890123",
+       "isActive": true,
+       "createdAt": "2024-01-01T00:00:00.000Z",
+       "updatedAt": "2024-12-21T11:00:00.000Z"
+     }
+   }
+   
+   Contoh Request - Update Type:
+   {
+     "type": "e-wallet"
+   }
+   
+   Contoh Request - Nonaktifkan Wallet:
+   {
+     "isActive": false
+   }
+   
+   Response Error - Type Tidak Valid (400):
+   {
+     "message": "Type wallet harus salah satu dari: bank, e-wallet, cash, other."
+   }
+   
+   Response Error - Balance Negatif (400):
+   {
+     "message": "Saldo wallet tidak boleh negatif."
+   }
+   
+   Response Error - Duplikasi Nama (409):
+   {
+     "message": "Wallet dengan nama yang sama sudah ada. Coba nama lain."
+   }
+   
+   Response Error - Wallet Tidak Ditemukan (404):
+   {
+     "message": "Wallet gak ketemu."
+   }
+   
+   Response Error - Bukan Milik User (403):
+   {
+     "message": "Bukan punya lo ini mah."
+   }
+   
+   Response Error - Unauthorized (401):
+   {
+     "message": "Unauthorized. Login dulu bos."
+   }
+   
+   Response Error - Server Error (500):
+   {
+     "message": "Server error.",
+     "error": "Error message details"
+   }
+
+================================================================================
+
+5. DELETE /api/wallet/[id]
+   Hapus wallet (soft-delete jika dipakai transaksi, hard-delete jika tidak)
+   
+   Request:
+   DELETE /api/wallet/wallet123abcdef123456789
+   Headers: Authorization: Bearer <token>
+   
+   Response Success - Soft Delete (200):
+   (Jika wallet masih dipakai transaksi)
+   {
+     "message": "Wallet masih dipakai di transaksi, jadi cuma dinonaktifkan (isActive = false).",
+     "data": {
+       "_id": "wallet123abcdef123456789",
+       "name": "BCA",
+       "type": "bank",
+       "balance": 2500000,
+       "color": "#0066CC",
+       "user": "12345abcdef1234567890123",
+       "isActive": false,
+       "createdAt": "2024-01-01T00:00:00.000Z",
+       "updatedAt": "2024-12-21T12:00:00.000Z"
+     }
+   }
+   
+   Response Success - Hard Delete (200):
+   (Jika wallet tidak dipakai transaksi)
+   {
+     "message": "Wallet berhasil dihapus."
+   }
+   
+   Response Success - Sudah Nonaktif (200):
+   (Jika wallet sudah dinonaktifkan sebelumnya)
+   {
+     "message": "Wallet ini sudah dinonaktifkan dan masih dipakai di transaksi."
+   }
+   
+   Response Error - Wallet Tidak Ditemukan (404):
+   {
+     "message": "Wallet gak ketemu."
+   }
+   
+   Response Error - Bukan Milik User (403):
+   {
+     "message": "Bukan punya lo ini mah."
+   }
+   
+   Response Error - Unauthorized (401):
+   {
+     "message": "Unauthorized. Login dulu bos."
+   }
+   
+   Response Error - Server Error (500):
+   {
+     "message": "Server error.",
+     "error": "Error message details"
+   }
+
+================================================================================
+CATATAN PENTING:
+================================================================================
+
+1. Semua endpoint memerlukan authentication (header Authorization: Bearer <token>)
+
+2. User hanya bisa mengakses wallet miliknya sendiri (security check)
+
+3. Field yang bisa diisi saat POST:
+   - name (required): Nama wallet
+   - type (required): bank, e-wallet, cash, atau other
+   - color (optional): Warna untuk UI
+   - balance (optional): Saldo awal (default: 0)
+
+4. Field yang bisa diupdate saat PUT:
+   - name: Nama wallet
+   - type: Jenis wallet
+   - color: Warna untuk UI
+   - balance: Saldo wallet
+   - isActive: Status aktif/nonaktif
+
+5. DELETE memiliki 2 behavior:
+   - Soft delete: Jika wallet masih dipakai transaksi, hanya set isActive = false
+   - Hard delete: Jika wallet tidak dipakai transaksi, hapus permanen
+
+6. Validasi:
+   - Nama wallet tidak boleh duplikat per user
+   - Balance tidak boleh negatif
+   - Type harus sesuai enum yang ditentukan
+
+================================================================================
+

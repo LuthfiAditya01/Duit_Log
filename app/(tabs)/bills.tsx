@@ -95,7 +95,6 @@ export default function BillsScreen() {
   };
 
   const renderItem = ({ item }: { item: any }) => {
-    console.log(`Tagihan : ${item.name} , Frequency : ${item.frequency}, DueMonth : ${item.dueMonth}`);
     return (
       <View style={styles.cardWrapper}>
         {/* Card Data Utama */}

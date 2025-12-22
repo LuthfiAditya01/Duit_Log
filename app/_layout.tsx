@@ -1,10 +1,12 @@
 import { AuthProvider } from "@/context/AuthContext";
+import { AppStatusProvider, useAppStatus } from "@/context/AppStatusContext";
 import { ThemeProvider, useThemeContext } from "@/context/ThemeContext";
+import MaintenanceScreen from "@/components/MaintenanceScreen";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar"; // 1. Import StatusBar
-import { useEffect } from "react";
-import { Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Platform } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"; // 2. Import Safe Area
 
 Notifications.setNotificationHandler({
@@ -17,10 +19,58 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Inner component untuk akses theme context
+// Inner component untuk akses theme context dan app status
 function RootLayoutContent() {
   const { isDarkMode, colors } = useThemeContext();
+  const { status, isLoading, isAvailable, isMaintenance, refreshStatus } = useAppStatus();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Handle refresh status
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshStatus();
+    setIsRefreshing(false);
+  };
+
+  // Kalau masih loading, tampilkan loading indicator
+  if (isLoading) {
+    return (
+      <>
+        <StatusBar 
+          style={isDarkMode ? "light" : "dark"} 
+          translucent={false} 
+          backgroundColor={colors.background} 
+        />
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </SafeAreaView>
+      </>
+    );
+  }
+
+  // Kalau aplikasi tidak available atau sedang maintenance, tampilkan maintenance screen
+  if (!isAvailable || isMaintenance) {
+    return (
+      <>
+        <StatusBar 
+          style={isDarkMode ? "light" : "dark"} 
+          translucent={false} 
+          backgroundColor={colors.background} 
+        />
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+          {status && (
+            <MaintenanceScreen 
+              status={status} 
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
+          )}
+        </SafeAreaView>
+      </>
+    );
+  }
+
+  // Kalau aplikasi available, tampilkan aplikasi normal
   return (
     <>
       <StatusBar 
@@ -67,13 +117,15 @@ export default function RootLayout() {
   }, []);
   
   return (
-    // Bungkus semua pake AuthProvider dan ThemeProvider
+    // Bungkus semua pake AppStatusProvider, AuthProvider, dan ThemeProvider
     <SafeAreaProvider>
-      <AuthProvider>
+      <AppStatusProvider>
         <ThemeProvider>
-          <RootLayoutContent />
+          <AuthProvider>
+            <RootLayoutContent />
+          </AuthProvider>
         </ThemeProvider>
-      </AuthProvider>
+      </AppStatusProvider>
     </SafeAreaProvider>
   );
 }
